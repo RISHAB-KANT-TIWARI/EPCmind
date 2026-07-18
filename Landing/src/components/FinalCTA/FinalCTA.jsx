@@ -3,6 +3,7 @@ import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./FinalCTA.css";
+import { Link } from "react-router-dom";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -28,6 +29,7 @@ export default function FinalCTA() {
             <div className="cta-glow" aria-hidden="true" />
             <h2>Stop searching documents. Start asking questions.</h2>
             <p>Upload your project documents. Ask engineering questions. Get traceable answers.</p>
+            <Link to="https://epcmind-app.netlify.app/"></Link>
             <button className="cta-button">
                 <span>Try the Demo</span>
             </button>
