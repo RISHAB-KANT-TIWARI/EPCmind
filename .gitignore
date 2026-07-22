@@ -1,48 +1,23 @@
-# -----------------------
 # Python
-# -----------------------
 backend/__pycache__/
-backend/venv/
 backend/.venv/
 backend/*.pyc
 
-# -----------------------
 # Backend secrets
-# -----------------------
 backend/.env
 
-# -----------------------
-# Backend generated files
-# -----------------------
-backend/chroma_db/
-backend/uploaded_docs/
-backend/compliance_results/
-backend/last_compliance_check.json
-
-# -----------------------
 # Node
-# -----------------------
 Landing/node_modules/
 Dashboard/node_modules/
 frontend/dist/
 
-# Vite cache
-Landing/.vite/
-
-# -----------------------
 # Frontend env
-# -----------------------
 Dashboard/.env
 
-# -----------------------
 # OS
-# -----------------------
 .DS_Store
 Thumbs.db
 
-# -----------------------
 # IDE
-# -----------------------
 .vscode/
 .idea/
-

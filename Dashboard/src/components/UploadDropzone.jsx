@@ -12,19 +12,11 @@ import { uploadDocument } from "../api/client";
  * (Documents.jsx) uses this to prepend the new row to its list without
  * a full refetch.
  */
-const PROCESSING_STEPS = [
-  "Extracting text…",
-  "Chunking document…",
-  "Generating embeddings…",
-  "Indexing into knowledge base…",
-];
-
 export default function UploadDropzone({ onUploaded }) {
   const zoneRef = useRef(null);
   const [dragging, setDragging] = useState(false);
   const [progress, setProgress] = useState(null); // null = idle
   const [error, setError] = useState(null);
-  const [stepLabel, setStepLabel] = useState("");
 
   useGSAP(
     () => {
@@ -41,23 +33,8 @@ export default function UploadDropzone({ onUploaded }) {
     async (file) => {
       setError(null);
       setProgress(0);
-      setStepLabel("");
-
-      let stepInterval;
-
       try {
-        const res = await uploadDocument(file, (pct) => {
-          setProgress(pct);
-          if (pct >= 100 && !stepInterval) {
-            let i = 0;
-            setStepLabel(PROCESSING_STEPS[0]);
-            stepInterval = setInterval(() => {
-              i = (i + 1) % PROCESSING_STEPS.length;
-              setStepLabel(PROCESSING_STEPS[i]);
-            }, 1200);
-          }
-        });
-
+        const res = await uploadDocument(file, setProgress);
         if (res.data.status === "error") {
           throw new Error(res.data.message || "Upload failed");
         }
@@ -69,9 +46,7 @@ export default function UploadDropzone({ onUploaded }) {
           setTimeout(() => zoneRef.current?.classList.remove("error-shake"), 400);
         }
       } finally {
-        clearInterval(stepInterval);
         setProgress(null);
-        setStepLabel("");
       }
     },
     [onUploaded]
@@ -125,16 +100,11 @@ export default function UploadDropzone({ onUploaded }) {
         </>
       ) : (
         <div className="max-w-xs mx-auto">
-          <p className="text-text-secondary text-xs mb-2">
-            {stepLabel || `Uploading… ${progress}%`}
-          </p>
+          <p className="text-text-secondary text-xs mb-2">Processing… {progress}%</p>
           <div className="h-1.5 rounded-full bg-surface-2 overflow-hidden">
             <div
               className="h-full rounded-full bg-accent relative transition-[width] duration-200"
-              style={{
-                width: stepLabel ? "100%" : `${progress}%`,
-                boxShadow: "0 0 8px 1px rgba(79,70,229,0.8)",
-              }}
+              style={{ width: `${progress}%`, boxShadow: "0 0 8px 1px rgba(79,70,229,0.8)" }}
             />
           </div>
         </div>
@@ -142,4 +112,5 @@ export default function UploadDropzone({ onUploaded }) {
 
       {error && <p className="text-status-fail text-xs mt-3">{error}</p>}
     </div>
-  );}
+  );
+}

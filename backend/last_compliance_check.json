@@ -1,0 +1,292 @@
+{
+  "results": [
+    {
+      "requirement": "System Topology (VFI-SS-111)",
+      "specified_value": "VFI-SS-111 per IEC 62040-3",
+      "submitted_value": "Double conversion, on-line (VFI per IEC 62040-3)",
+      "status": "Match",
+      "severity": null
+    },
+    {
+      "requirement": "Rated Capacity (per module)",
+      "specified_value": "500 kVA / 500 kW at unity output power factor",
+      "submitted_value": "500 kVA / 500 kW at unity output power factor",
+      "status": "Match",
+      "severity": null
+    },
+    {
+      "requirement": "System Redundancy",
+      "specified_value": "N+1 modular configuration, minimum 2 modules per frame, hot-swappable",
+      "submitted_value": "N+1 modular configuration, 4 modules installed (3 required + 1 redundant), hot-swappable",
+      "status": "Match",
+      "severity": null
+    },
+    {
+      "requirement": "Input Voltage / Phase",
+      "specified_value": "480 VAC, 3-phase, 3-wire + ground, 60 Hz",
+      "submitted_value": "480 VAC, 3-phase, 3-wire + ground, 60 Hz",
+      "status": "Match",
+      "severity": null
+    },
+    {
+      "requirement": "Output Voltage / Phase",
+      "specified_value": "480 VAC, 3-phase, 3-wire + ground, 60 Hz, \u00b11%",
+      "submitted_value": "480 VAC, 3-phase, 3-wire + ground, 60 Hz, \u00b11%",
+      "status": "Match",
+      "severity": null
+    },
+    {
+      "requirement": "Input Frequency Range",
+      "specified_value": "60 Hz \u00b15%, walk-in on restoration",
+      "submitted_value": "Not stated",
+      "status": "Cannot verify",
+      "severity": null
+    },
+    {
+      "requirement": "Input Current Total Harmonic Distortion (THDi)",
+      "specified_value": "< 5% at full rated linear load, without input filter",
+      "submitted_value": "< 5% at full rated linear load",
+      "status": "Deviation",
+      "severity": "Low"
+    },
+    {
+      "requirement": "Output Voltage THD",
+      "specified_value": "< 2% linear load, < 5% non-linear load",
+      "submitted_value": "< 2% linear load, < 5% non-linear load",
+      "status": "Match",
+      "severity": null
+    },
+    {
+      "requirement": "Overall AC-AC Efficiency (Double Conversion Mode)",
+      "specified_value": "\u2265 97.0% at 40\u2013100% load",
+      "submitted_value": "96.2% at 40\u2013100% load",
+      "status": "Deviation",
+      "severity": "Critical"
+    },
+    {
+      "requirement": "ECO / High-Efficiency Mode Efficiency",
+      "specified_value": "\u2265 99.0%",
+      "submitted_value": "Not stated",
+      "status": "Cannot verify",
+      "severity": null
+    },
+    {
+      "requirement": "Overload Capacity",
+      "specified_value": "125% for 10 minutes; 150% for 1 minute",
+      "submitted_value": "125% for 10 minutes; 150% for 1 minute",
+      "status": "Match",
+      "severity": null
+    },
+    {
+      "requirement": "Battery Backup / Autonomy",
+      "specified_value": "15 minutes minimum at full rated load (500 kW)",
+      "submitted_value": "10 minutes at full rated load (500 kW)",
+      "status": "Deviation",
+      "severity": "Critical"
+    },
+    {
+      "requirement": "Battery Type (General)",
+      "specified_value": "Valve-regulated lead-acid (VRLA), sealed, front-access",
+      "submitted_value": "Valve-regulated lead-acid (VRLA), sealed, front-access",
+      "status": "Match",
+      "severity": null
+    },
+    {
+      "requirement": "Battery Type (Telecom-grade)",
+      "specified_value": "telecom-grade",
+      "submitted_value": "Not stated",
+      "status": "Deviation",
+      "severity": "Moderate"
+    },
+    {
+      "requirement": "Battery Rack Rating (Seismic)",
+      "specified_value": "seismic-rated rack",
+      "submitted_value": "Not stated",
+      "status": "Deviation",
+      "severity": "Critical"
+    },
+    {
+      "requirement": "Parallel Capability",
+      "specified_value": "Up to 6 modules in parallel",
+      "submitted_value": "Not stated",
+      "status": "Cannot verify",
+      "severity": null
+    },
+    {
+      "requirement": "Acoustic Noise",
+      "specified_value": "\u2264 72 dBA at 1 meter, full load",
+      "submitted_value": "70 dBA at 1 meter, full load",
+      "status": "Match",
+      "severity": null
+    },
+    {
+      "requirement": "Operating Temperature Range",
+      "specified_value": "0\u00b0C to 40\u00b0C (32\u00b0F to 104\u00b0F)",
+      "submitted_value": "0\u00b0C to 40\u00b0C (32\u00b0F to 104\u00b0F)",
+      "status": "Match",
+      "severity": null
+    },
+    {
+      "requirement": "Operating Relative Humidity",
+      "specified_value": "0\u201395% non-condensing",
+      "submitted_value": "Not stated",
+      "status": "Cannot verify",
+      "severity": null
+    },
+    {
+      "requirement": "Altitude (no derate)",
+      "specified_value": "Up to 1,000 m (3,300 ft)",
+      "submitted_value": "Not stated",
+      "status": "Cannot verify",
+      "severity": null
+    },
+    {
+      "requirement": "Enclosure Rating (NEMA)",
+      "specified_value": "NEMA 1 / IP20 minimum",
+      "submitted_value": "NEMA 1",
+      "status": "Deviation",
+      "severity": "Low"
+    },
+    {
+      "requirement": "Ground Fault / Insulation Monitoring",
+      "specified_value": "Integral, per NEC Article 250 and Article 645",
+      "submitted_value": "Not stated",
+      "status": "Cannot verify",
+      "severity": null
+    },
+    {
+      "requirement": "Manufacturer Qualifications (experience)",
+      "specified_value": "Minimum 10 years documented experience manufacturing UPS equipment",
+      "submitted_value": "Not stated",
+      "status": "Cannot verify",
+      "severity": null
+    },
+    {
+      "requirement": "Manufacturer Qualifications (service response)",
+      "specified_value": "factory-authorized service organization within 100 miles of the Site capable of 4-hour emergency response",
+      "submitted_value": "Not stated",
+      "status": "Cannot verify",
+      "severity": null
+    },
+    {
+      "requirement": "Equipment Listing (NRTL)",
+      "specified_value": "listed by a Nationally Recognized Testing Laboratory (NRTL)",
+      "submitted_value": "Not stated",
+      "status": "Cannot verify",
+      "severity": null
+    },
+    {
+      "requirement": "Manufacturer's Standard Parts and Labor Warranty",
+      "specified_value": "minimum 2 years from Substantial Completion",
+      "submitted_value": "1-year parts and labor warranty from date of startup",
+      "status": "Deviation",
+      "severity": "Critical"
+    },
+    {
+      "requirement": "Battery Warranty",
+      "specified_value": "minimum 3 years full replacement, prorated to year 7",
+      "submitted_value": "2-year full replacement warranty, prorated to year 5",
+      "status": "Deviation",
+      "severity": "Critical"
+    },
+    {
+      "requirement": "Basis of Design Manufacturer",
+      "specified_value": "Eaton (93PM)",
+      "submitted_value": "Eaton 93PM UPS",
+      "status": "Match",
+      "severity": null
+    },
+    {
+      "requirement": "Front Panel Display",
+      "specified_value": "graphical touchscreen LCD/LED display of all operating parameters and alarms",
+      "submitted_value": "7-inch color touchscreen HMI with event log and trending",
+      "status": "Match",
+      "severity": null
+    },
+    {
+      "requirement": "Network Management Card (NMC)",
+      "specified_value": "SNMP v2/v3, Modbus TCP, and BACnet/IP gateway",
+      "submitted_value": "SNMP v1/v2c/v3, Modbus TCP, BACnet/IP",
+      "status": "Match",
+      "severity": null
+    },
+    {
+      "requirement": "Dry Contact Interface",
+      "specified_value": "minimum 8 programmable form-C relay outputs",
+      "submitted_value": "8 programmable form-C dry contacts",
+      "status": "Match",
+      "severity": null
+    },
+    {
+      "requirement": "BMS (Per-string voltage)",
+      "specified_value": "per-string voltage",
+      "submitted_value": "Not stated",
+      "status": "Deviation",
+      "severity": "Moderate"
+    },
+    {
+      "requirement": "BMS (Per-string temperature)",
+      "specified_value": "per-string temperature",
+      "submitted_value": "Not stated",
+      "status": "Deviation",
+      "severity": "Moderate"
+    },
+    {
+      "requirement": "BMS (Impedance/Conductance trending)",
+      "specified_value": "internal impedance/conductance trending",
+      "submitted_value": "per-string internal resistance trending",
+      "status": "Match",
+      "severity": null
+    },
+    {
+      "requirement": "BMS (Predictive end-of-life alarming)",
+      "specified_value": "predictive end-of-life alarming",
+      "submitted_value": "end-of-life prediction",
+      "status": "Match",
+      "severity": null
+    },
+    {
+      "requirement": "Remote Emergency Power Off (REPO) - functionality",
+      "specified_value": "hardwired, normally-closed loop",
+      "submitted_value": "Hardwired REPO loop, normally closed",
+      "status": "Match",
+      "severity": null
+    },
+    {
+      "requirement": "Remote Emergency Power Off (REPO) - coordination",
+      "specified_value": "coordinated with fire alarm system per NFPA 70/NEC 645.10",
+      "submitted_value": "Not stated",
+      "status": "Deviation",
+      "severity": "Critical"
+    },
+    {
+      "requirement": "Maintenance Bypass (Integral, key-interlocked, make-before-break)",
+      "specified_value": "Integral, key-interlocked make-before-break maintenance bypass cabinet",
+      "submitted_value": "Not stated",
+      "status": "Cannot verify",
+      "severity": null
+    },
+    {
+      "requirement": "Maintenance Bypass (Rated Output Current)",
+      "specified_value": "rated for continuous duty at 125% of the UPS module's rated output current",
+      "submitted_value": "Not stated",
+      "status": "Cannot verify",
+      "severity": null
+    },
+    {
+      "requirement": "Footprint (per module cabinet)",
+      "specified_value": "Not stated",
+      "submitted_value": "1,200 mm W x 1,000 mm D x 2,000 mm H",
+      "status": "Cannot verify",
+      "severity": null
+    },
+    {
+      "requirement": "Weight (per module cabinet)",
+      "specified_value": "Not stated",
+      "submitted_value": "Approx. 1,850 kg",
+      "status": "Cannot verify",
+      "severity": null
+    }
+  ],
+  "ran_at": "2026-07-17T14:38:15.141713"
+}

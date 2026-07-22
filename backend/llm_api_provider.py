@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 # Central config — change provider/model here only
 
-MODEL_NAME = "gemini-3.1-flash-lite"  # or gemini-2.5-pro for higher quality
+MODEL_NAME = "gemini-2.5-flash"  # or gemini-2.5-pro for higher quality
 
 load_dotenv()
 API_KEY = os.getenv("API_KEY")

@@ -1,4 +1,3 @@
-import { deleteDocument, openDocument } from "../api/client";
 import { useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
@@ -80,16 +79,12 @@ export default function Documents() {
         open={!!deleteTarget}
         title="Remove document?"
         onClose={() => setDeleteTarget(null)}
-        onConfirm={async() => {
-          try {
-            await deleteDocument(deleteTarget.filename);
-            setDocs((prev) => prev.filter((d) => d.filename !== deleteTarget.filename));
-            toast?.show(`${deleteTarget.filename} removed`);
-          } catch (err) {
-            toast?.show("Failed to remove document", "error");
-          } finally {
-            setDeleteTarget(null);
-          }
+        onConfirm={() => {
+          // BACKEND NOTE: wire this to DELETE /documents/{filename} if you
+          // build that endpoint; for now this just removes it client-side.
+          setDocs((prev) => prev.filter((d) => d.filename !== deleteTarget.filename));
+          toast?.show(`${deleteTarget.filename} removed`);
+          setDeleteTarget(null);
         }}
         confirmLabel="Remove"
       >
@@ -118,27 +113,18 @@ function DocRow({ doc, onDelete }) {
 
   return (
     <tr ref={rowRef} className="border-b border-border-soft/60 text-sm">
-      <td className="py-3.5">
-        <button
-        onClick={() => openDocument(doc.filename)}
-        className="text-text-primary hover:text-accent hover:underline transition-colors text-left"
-        >
-          {doc.filename}
-        </button>
-      </td>
+      <td className="py-3.5 text-text-primary">{doc.filename}</td>
       <td className="py-3.5">
         <DocumentBadge type={doc.document_type} />
       </td>
       <td className="py-3.5 text-text-secondary">{doc.chunk_count ?? "—"}</td>
       <td className="py-3.5 text-right">
-        {localStorage.getItem("owner_key") && (
-          <button
+        <button
           onClick={onDelete}
           className="text-text-muted hover:text-status-fail text-xs transition-colors"
-          >
-            Remove
-          </button>
-        )}
+        >
+          Remove
+        </button>
       </td>
     </tr>
   );
