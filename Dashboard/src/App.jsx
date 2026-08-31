@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import AskDocuments from "./pages/AskDocuments";
 import ComplianceCheck from "./pages/ComplianceCheck";
 import Documents from "./pages/Documents";
+import ColdStartBanner from "./components/ColdStartBanner";
 
 const TITLES = {
   "/": "Dashboard",
@@ -48,6 +49,7 @@ function Layout() {
           title={TITLES[location.pathname] || "EPC Intelligence"}
           onMenuClick={() => setSidebarOpen(true)}
         />
+        <ColdStartBanner />
         <div ref={contentRef}>
           <Routes>
             <Route path="/" element={<Home />} />
