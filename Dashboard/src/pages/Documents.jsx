@@ -5,7 +5,7 @@ import UploadDropzone from "../components/UploadDropzone";
 import DocumentBadge from "../components/DocumentBadge";
 import EmptyState from "../components/EmptyState";
 import Modal from "../components/Modal";
-import { getDocuments } from "../api/client";
+import { getDocuments, deleteDocument } from "../api/client";
 import { useToast } from "../components/Toast";
 
 /**
@@ -74,17 +74,20 @@ export default function Documents() {
           </div>
         )}
       </div>
-
       <Modal
         open={!!deleteTarget}
         title="Remove document?"
         onClose={() => setDeleteTarget(null)}
-        onConfirm={() => {
-          // BACKEND NOTE: wire this to DELETE /documents/{filename} if you
-          // build that endpoint; for now this just removes it client-side.
-          setDocs((prev) => prev.filter((d) => d.filename !== deleteTarget.filename));
-          toast?.show(`${deleteTarget.filename} removed`);
-          setDeleteTarget(null);
+        onConfirm={async () => {
+          try {
+            await deleteDocument(deleteTarget.filename);
+            setDocs((prev) => prev.filter((d) => d.filename !== deleteTarget.filename));
+            toast?.show(`${deleteTarget.filename} removed`);
+          } catch (err) {
+            toast?.show("Failed to remove document", "error");
+          } finally {
+            setDeleteTarget(null);
+          }
         }}
         confirmLabel="Remove"
       >

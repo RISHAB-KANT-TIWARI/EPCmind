@@ -116,5 +116,12 @@ export const getDocuments = () => client.get("/documents");
  * demo is fine if you're short on time.
  */
 export const getStats = () => client.get("/stats");
+/**
+ * ---- 6. DELETE DOCUMENT ----
+ * Expected FastAPI endpoint: DELETE /documents/{filename}
+ * Response body: { status: "success", message: "..." }
+ */
+export const deleteDocument = (filename) =>
+  client.delete(`/documents/${encodeURIComponent(filename)}`);
 
 export default client;
