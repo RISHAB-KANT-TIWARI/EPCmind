@@ -52,7 +52,7 @@
     {
       "requirement": "Overall AC-AC Efficiency (Double Conversion Mode)",
       "specified_value": "\u2265 97.0% at 40\u2013100% load",
-      "submitted_value": "96.2% at 40\u2013100% load",
+      "submitted_value": "96.2% at 40\u2013100% load (per attached factory efficiency curve, Appendix B)",
       "status": "Deviation",
       "severity": "Moderate"
     },
@@ -66,7 +66,7 @@
     {
       "requirement": "Battery Backup / Autonomy",
       "specified_value": "15 minutes minimum at full rated load (500 kW), new battery, 25\u00b0C, to end-of-discharge voltage",
-      "submitted_value": "10 minutes at full rated load (500 kW), new battery, 25\u00b0C",
+      "submitted_value": "10 minutes at full rated load (500 kW), new battery, 25\u00b0C, per attached battery sizing calculation (Appendix C)",
       "status": "Deviation",
       "severity": "Critical"
     },
@@ -74,8 +74,8 @@
       "requirement": "Battery Type",
       "specified_value": "Valve-regulated lead-acid (VRLA), sealed, telecom-grade, front-access, seismic-rated rack",
       "submitted_value": "Valve-regulated lead-acid (VRLA), sealed, EnergyAware monitored rack, front-access",
-      "status": "Match",
-      "severity": null
+      "status": "Deviation",
+      "severity": "Low"
     },
     {
       "requirement": "Acoustic Noise",
@@ -99,19 +99,19 @@
       "severity": null
     },
     {
-      "requirement": "UPS Warranty",
-      "specified_value": "minimum 2 years from Substantial Completion",
-      "submitted_value": "Standard 1-year parts and labor warranty from date of startup",
+      "requirement": "Manufacturer Warranty (Parts and Labor)",
+      "specified_value": "minimum 2 years from Substantial Completion, extendable to 5 years via service agreement",
+      "submitted_value": "Standard 1-year parts and labor warranty from date of startup, extendable to 5 years via Eaton PredictPulse Advantage service agreement",
       "status": "Deviation",
-      "severity": "Moderate"
+      "severity": "Critical"
     },
     {
       "requirement": "Battery Warranty",
-      "specified_value": "minimum 3 years full replacement, prorated to year 7",
+      "specified_value": "minimum 3 years full replacement, prorated to year 7, per manufacturer's published warranty schedule",
       "submitted_value": "2-year full replacement warranty, prorated to year 5",
       "status": "Deviation",
-      "severity": "Moderate"
+      "severity": "Critical"
     }
   ],
-  "ran_at": "2026-09-04T15:43:02.719706"
+  "ran_at": "2026-09-04T16:59:20.596170"
 }
