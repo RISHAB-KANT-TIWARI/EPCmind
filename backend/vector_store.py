@@ -100,3 +100,9 @@ def get_stats():
         "total_documents": total_documents,
         "total_chunks": total_chunks,
     }
+
+def delete_document(filename: str):
+    """
+    Removes all chunks belonging to a given filename from ChromaDB.
+    """
+    _collection.delete(where={"filename": filename})

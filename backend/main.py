@@ -7,7 +7,7 @@ from compilance import run_compliance_check
 from vector_store import add_chunks
 from vector_store import search
 from vector_store import _collection
-from vector_store import list_documents
+from vector_store import list_documents, delete_document
 from vector_store import get_stats
 from chunker import chunk_document
 from exctractors import extract_file
@@ -19,9 +19,12 @@ from compilance import save_compliance_results , load_compliance_results
 app = FastAPI(title="EPC Intelligence API")
 
 
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # your Vite dev server
+    allow_origins=[FRONTEND_URL],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -68,14 +71,24 @@ UPLOAD_DIR = os.getenv(
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
+ALLOWED_EXTENSIONS = {".pdf", ".docx", ".xlsx", ".xls", ".csv", ".txt", ".md"}
+MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB limit
 @app.post("/upload")
 def upload_document(file: UploadFile = File(...)):
-    save_path = os.path.join(UPLOAD_DIR, file.filename)
+    safe_filename = os.path.basename(file.filename)
+    file_ext = os.path.splitext(safe_filename)[1].lower()
 
-    # Save the uploaded file to disk first
+    if file_ext not in ALLOWED_EXTENSIONS:
+        return {"status": "error", "message": f"File type '{file_ext}' not allowed."}
+
+    content = file.file.read()
+    if len(content) > MAX_FILE_SIZE:
+        return {"status": "error", "message": "File too large. Max size is 50 MB"}
+
+    save_path = os.path.join(UPLOAD_DIR, safe_filename)
+
     with open(save_path, "wb") as f:
-        shutil.copyfileobj(file.file, f)
-
+        f.write(content)
     # Run it through your existing pipeline — identical to what ingest.py does
     try:
         extracted = extract_file(save_path)
@@ -95,6 +108,20 @@ def upload_document(file: UploadFile = File(...)):
         "chunks_added": len(chunks),
         "status": "success",
     }
+
+@app.delete("/documents/{filename}")
+def remove_document(filename: str):
+    safe_filename = os.path.basename(filename)
+
+    # Remove from ChromaDB
+    delete_document(safe_filename)
+
+    # Remove from disk too
+    file_path = os.path.join(UPLOAD_DIR, safe_filename)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    return {"status": "success", "message": f"{safe_filename} removed"}
 
 @app.post("/compliance-check")
 def compliance_check():
