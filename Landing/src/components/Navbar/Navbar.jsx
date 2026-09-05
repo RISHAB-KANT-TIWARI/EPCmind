@@ -47,7 +47,7 @@ export default function Navbar() {
                         </li>
                     ))}
                 </ul>
-                <Link to="https://epcmind-app.netlify.app/">
+                <Link to="https://ep-cmind-chi.vercel.app/">
                     <button className="navbar-cta">Try Demo</button>
                 </Link>
             </div>

@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 import httpx
 
-MODEL_NAME = "gemini-3.5-flash-lite"
+MODEL_NAME = "gemini-3.7-flash"
 
 load_dotenv()
 API_KEY = os.getenv("API_KEY")

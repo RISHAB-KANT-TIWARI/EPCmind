@@ -19,7 +19,7 @@ from compilance import save_compliance_results , load_compliance_results
 app = FastAPI(title="EPC Intelligence API")
 
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://ep-cmind-chi.vercel.app/")
 
 app.add_middleware(
     CORSMiddleware,
