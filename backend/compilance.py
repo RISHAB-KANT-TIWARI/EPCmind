@@ -29,7 +29,11 @@ Example format:
 [{{"requirement": "Battery Autonomy", "specified_value": "15 minutes", "submitted_value": "10 minutes", "status": "Deviation", "severity": "Critical"}}]
 """
 
-    raw_response = ask_ai(prompt)
+    # raw_response = ask_ai(prompt)
+    try:
+        raw_response = ask_ai(prompt) 
+    except ServerError:
+        raise HTTPException( status_code=503, detail="AI service is currently busy (Gemini high demand). Please try again in a minute." )
 
     # Gemini sometimes wraps JSON in ```json fences even when told not to — strip defensively
     cleaned = raw_response.strip()
