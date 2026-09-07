@@ -19,7 +19,7 @@ from compilance import save_compliance_results , load_compliance_results
 app = FastAPI(title="EPC Intelligence API")
 
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "https://ep-cmind-chi.vercel.app/")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 app.add_middleware(
     CORSMiddleware,
@@ -28,6 +28,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Content-Security-Policy"] = "default-src 'self'"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
 
 @app.get("/")
 def root():
@@ -123,9 +134,12 @@ def remove_document(filename: str):
 
     return {"status": "success", "message": f"{safe_filename} removed"}
 
+class ComplianceRequest(BaseModel):
+    documents: list[str]
+
 @app.post("/compliance-check")
-def compliance_check():
-    results = run_compliance_check()
+def compliance_check(req: ComplianceRequest):
+    results = run_compliance_check(req.documents)
     data = save_compliance_results(results)
     return data  # {"results": [...], "ran_at": "..."}
 
