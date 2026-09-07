@@ -47,7 +47,7 @@ export default function Navbar() {
                         </li>
                     ))}
                 </ul>
-                <Link to="https://ep-cmind-chi.vercel.app/">
+                <Link to=" http://localhost:5173/">
                     <button className="navbar-cta">Try Demo</button>
                 </Link>
             </div>

@@ -16,7 +16,7 @@ import axios from "axios";
  * =============================================================
  */
 
-const API_BASE = import.meta.env.VITE_API_BASE || "https://epcmind-yfud.onrender.com";
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
 const client = axios.create({
   baseURL: API_BASE,
@@ -59,8 +59,10 @@ export const askQuestion = (question, documentType = null) =>
  * strings above (case-sensitive) since it maps directly to the
  * green/amber/red status dots.
  */
-export const runComplianceCheck = (payload = {}) =>
-  client.post("/compliance-check", payload);
+// export const runComplianceCheck = (payload = {}) =>
+//   client.post("/compliance-check", payload);
+export const runComplianceCheck = (documentFilenames) =>
+  client.post("/compliance-check", { documents: documentFilenames });
 
 export const getLastComplianceCheck = () => client.get("/compliance-check");
 

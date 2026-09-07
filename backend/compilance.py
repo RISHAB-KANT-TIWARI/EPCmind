@@ -1,21 +1,69 @@
+import gc
 import json
+import os
+from datetime import datetime
+
+from google.genai.errors import ServerError
+from fastapi import HTTPException
+
 from exctractors import extract_file
 from llm_api_provider import ask_ai
+from vector_store import list_documents
 
-SPEC_PATH = "Sample_docs/UPS_System_Specification.docx"
-SUBMITTAL_PATH = "Sample_docs/UPS_Vendor_Submittal_26-33-53-01.pdf"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_DIR = os.getenv("UPLOAD_DIR", os.path.join(BASE_DIR, "uploaded_docs"))
+COMPLIANCE_FILE = os.path.join(BASE_DIR, "last_compliance_check.json")
+MAX_COMPLIANCE_CHARS = int(os.getenv("MAX_COMPLIANCE_CHARS", 150000))
 
-def run_compliance_check():
-    spec = extract_file(SPEC_PATH)
-    submittal = extract_file(SUBMITTAL_PATH)
 
-    prompt = f"""SPECIFICATION:
-{spec['text']}
+def run_compliance_check(filenames: list[str]):
+    if not filenames or len(filenames) < 2:
+        raise HTTPException(
+            status_code=400,
+            detail="Select at least 2 documents to compare (e.g. a Specification and a Vendor Submittal)."
+        )
 
-VENDOR SUBMITTAL:
-{submittal['text']}
+    all_docs = {d["filename"]: d["document_type"] for d in list_documents()}
 
-Compare every relevant requirement (battery autonomy, capacity, efficiency, topology, warranty, etc.) in the specification against the vendor submittal.
+    sections = []
+    total_chars = 0
+
+    for filename in filenames:
+        if filename not in all_docs:
+            raise HTTPException(status_code=404, detail=f"Document '{filename}' not found.")
+
+        file_path = os.path.join(UPLOAD_DIR, filename)
+        if not os.path.exists(file_path):
+            raise HTTPException(status_code=404, detail=f"File '{filename}' missing from disk.")
+
+        extracted = extract_file(file_path)
+        text = extracted.get("text")
+        if text is None:
+            # Structured docs (xlsx/csv) come back as records — join into readable text
+            text = "\n".join(
+                ", ".join(f"{k}: {v}" for k, v in row.items())
+                for row in extracted.get("records", [])
+            )
+
+        total_chars += len(text)
+        doc_type = all_docs[filename]
+        sections.append(f"=== {doc_type.upper()} — {filename} ===\n{text}")
+
+    if total_chars > MAX_COMPLIANCE_CHARS:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Selected documents are too large to compare in one go "
+                f"({total_chars:,} characters, limit is {MAX_COMPLIANCE_CHARS:,}). "
+                "Select fewer documents and try again."
+            )
+        )
+
+    combined_docs = "\n\n".join(sections)
+
+    prompt = f"""{combined_docs}
+
+Compare every relevant requirement (battery autonomy, capacity, efficiency, topology, warranty, etc.) across the documents above. Use the SPECIFICATION documents as the source of required values, and the VENDOR SUBMITTAL (and other) documents as what was actually provided. If there are multiple submittals, compare each separately against the specification.
 
 Respond with ONLY a JSON array, no markdown formatting, no explanation, no code fences. Each item must have exactly these fields:
 - "requirement": short name of what's being compared
@@ -29,13 +77,14 @@ Example format:
 [{{"requirement": "Battery Autonomy", "specified_value": "15 minutes", "submitted_value": "10 minutes", "status": "Deviation", "severity": "Critical"}}]
 """
 
-    # raw_response = ask_ai(prompt)
     try:
-        raw_response = ask_ai(prompt) 
+        raw_response = ask_ai(prompt)
     except ServerError:
-        raise HTTPException( status_code=503, detail="AI service is currently busy (Gemini high demand). Please try again in a minute." )
+        raise HTTPException(
+            status_code=503,
+            detail="AI service is currently busy (Gemini high demand). Please try again in a minute."
+        )
 
-    # Gemini sometimes wraps JSON in ```json fences even when told not to — strip defensively
     cleaned = raw_response.strip()
     if cleaned.startswith("```"):
         cleaned = cleaned.split("```")[1]
@@ -46,19 +95,10 @@ Example format:
     try:
         results = json.loads(cleaned)
     except json.JSONDecodeError:
-        # If Gemini didn't return valid JSON, fail loudly instead of crashing the endpoint
         return []
 
     return results
 
-
-import json
-import os
-from datetime import datetime
-
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-COMPLIANCE_FILE = os.path.join(BASE_DIR, "last_compliance_check.json")
 
 def save_compliance_results(results):
     data = {
@@ -68,6 +108,7 @@ def save_compliance_results(results):
     with open(COMPLIANCE_FILE, "w") as f:
         json.dump(data, f, indent=2)
     return data
+
 
 def load_compliance_results():
     if not os.path.exists(COMPLIANCE_FILE):

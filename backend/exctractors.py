@@ -1,4 +1,5 @@
 import os
+import gc
 import pandas as pd
 from docx import Document
 from docx.document import Document as _Document
@@ -7,6 +8,8 @@ from docx.oxml.table import CT_Tbl
 from docx.table import Table, _Cell
 from docx.text.paragraph import Paragraph
 import pypdf
+from pdf2image import convert_from_path
+import pytesseract
 
 
 def iter_block_items(parent):
@@ -42,8 +45,27 @@ def extract_docx(path):
 def extract_pdf(path):
     reader = pypdf.PdfReader(path)
     full_text = []
+    ocr_dpi = int(os.getenv("OCR_DPI", 250))
+
     for i, page in enumerate(reader.pages):
-        full_text.append(f"[PAGE {i+1}]\n{page.extract_text()}")
+        text = page.extract_text() or ""
+
+        if len(text.strip()) < 20:
+            # Page has little/no real text — likely a scanned image, fall back to OCR
+            try:
+                images = convert_from_path(
+                    path, dpi=ocr_dpi,
+                    first_page=i + 1, last_page=i + 1
+                )
+                if images:
+                    text = pytesseract.image_to_string(images[0])
+                    del images
+                    gc.collect()
+            except Exception as e:
+                text = f"[OCR failed for this page: {e}]"
+
+        full_text.append(f"[PAGE {i+1}]\n{text}")
+
     return "\n".join(full_text)
 
 

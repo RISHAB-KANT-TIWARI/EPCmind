@@ -3,7 +3,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import ComplianceResultCard from "../components/ComplianceResultCard";
 import EmptyState from "../components/EmptyState";
-import { runComplianceCheck, getLastComplianceCheck } from "../api/client";
+import { runComplianceCheck, getLastComplianceCheck, getDocuments } from "../api/client";
 import { useToast } from "../components/Toast";
 
 export default function ComplianceCheck() {
@@ -11,10 +11,11 @@ export default function ComplianceCheck() {
   const [ranAt, setRanAt] = useState(null);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [documents, setDocuments] = useState([]);
+  const [selected, setSelected] = useState([]);
   const boxRef = useRef(null);
   const toast = useToast();
 
-  // Load whatever was last saved, on mount — survives navigation AND refresh
   useEffect(() => {
     getLastComplianceCheck()
       .then((res) => {
@@ -23,6 +24,10 @@ export default function ComplianceCheck() {
       })
       .catch(() => {})
       .finally(() => setInitialLoading(false));
+
+    getDocuments()
+      .then((res) => setDocuments(res.data.documents || []))
+      .catch(() => {});
   }, []);
 
   useGSAP(
@@ -33,14 +38,28 @@ export default function ComplianceCheck() {
     { dependencies: [loading] }
   );
 
+  const toggleSelect = (filename) => {
+    setSelected((prev) =>
+      prev.includes(filename)
+        ? prev.filter((f) => f !== filename)
+        : [...prev, filename]
+    );
+  };
+
   const handleRun = async () => {
+    if (selected.length < 2) {
+      toast?.show("Select at least 2 documents to compare.", "error");
+      return;
+    }
     setLoading(true);
     try {
-      const res = await runComplianceCheck();
+      const res = await runComplianceCheck(selected);
       setResults(res.data.results || []);
       setRanAt(res.data.ran_at || null);
     } catch (err) {
-      toast?.show("Compliance check failed — check the backend.", "error");
+      const message =
+        err.response?.data?.detail || "Compliance check failed — check the backend.";
+      toast?.show(message, "error");
     } finally {
       setLoading(false);
     }
@@ -66,16 +85,35 @@ export default function ComplianceCheck() {
           className="bg-surface border border-border rounded-2xl p-6 h-fit lg:sticky lg:top-20"
         >
           <p className="text-text-secondary text-sm mb-4">
-            Compares equipment specifications against vendor submittals and
-            flags any deviations, with severity ranking.
+            Select two or more documents to compare — specifications against
+            vendor submittals, RFIs, or procurement schedules.
           </p>
-          <div className="text-xs text-text-muted mb-6 space-y-1">
-            <div>Spec: UPS_System_Specification</div>
-            <div>Submittal: UPS_Vendor_Submittal</div>
+
+          <div className="text-xs text-text-muted mb-4 space-y-2 max-h-64 overflow-y-auto">
+            {documents.length === 0 && (
+              <div className="text-text-muted">No documents uploaded yet.</div>
+            )}
+            {documents.map((doc) => (
+              <label
+                key={doc.filename}
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  checked={selected.includes(doc.filename)}
+                  onChange={() => toggleSelect(doc.filename)}
+                />
+                <span className="truncate">
+                  {doc.filename}{" "}
+                  <span className="text-text-muted">({doc.document_type})</span>
+                </span>
+              </label>
+            ))}
           </div>
+
           <button
             onClick={handleRun}
-            disabled={loading}
+            disabled={loading || selected.length < 2}
             className="w-full py-2.5 rounded-xl bg-accent text-white text-sm disabled:opacity-50 hover:bg-accent/90 transition-colors"
           >
             {loading ? "Checking…" : hasRun ? "Re-run Compliance Check" : "Run Compliance Check"}
@@ -103,7 +141,7 @@ export default function ComplianceCheck() {
             <EmptyState
               icon="🛡️"
               title="No check run yet"
-              description="Run a compliance check to compare spec vs. vendor submittal."
+              description="Select documents and run a compliance check."
             />
           )}
           {!initialLoading && hasRun && results.length === 0 && (
