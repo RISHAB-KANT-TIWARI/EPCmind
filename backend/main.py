@@ -1,3 +1,6 @@
+import subprocess
+import sys
+import json
 from fastapi import FastAPI 
 from fastapi import UploadFile , File
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,6 +14,7 @@ from vector_store import list_documents, delete_document
 from vector_store import get_stats
 from chunker import chunk_document
 from exctractors import extract_file
+import uuid
 import os 
 import shutil
 from compilance import save_compliance_results , load_compliance_results
@@ -86,8 +90,8 @@ ALLOWED_EXTENSIONS = {".pdf", ".docx", ".xlsx", ".xls", ".csv", ".txt", ".md"}
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB limit
 @app.post("/upload")
 def upload_document(file: UploadFile = File(...)):
-    safe_filename = os.path.basename(file.filename)
-    file_ext = os.path.splitext(safe_filename)[1].lower()
+    original_filename = os.path.basename(file.filename)
+    file_ext = os.path.splitext(original_filename)[1].lower()
 
     if file_ext not in ALLOWED_EXTENSIONS:
         return {"status": "error", "message": f"File type '{file_ext}' not allowed."}
@@ -96,17 +100,53 @@ def upload_document(file: UploadFile = File(...)):
     if len(content) > MAX_FILE_SIZE:
         return {"status": "error", "message": "File too large. Max size is 50 MB"}
 
-    save_path = os.path.join(UPLOAD_DIR, safe_filename)
+    document_id = uuid.uuid4().hex
+    stored_filename = f"{document_id}_{original_filename}"
+    save_path = os.path.join(UPLOAD_DIR, stored_filename)
 
     with open(save_path, "wb") as f:
         f.write(content)
-    # Run it through your existing pipeline — identical to what ingest.py does
-    try:
-        extracted = extract_file(save_path)
-    except ValueError as e:
-        return {"status": "error", "message": str(e)}
 
-    chunks = chunk_document(extracted)
+    # ---- SANDBOX: file validation + extraction in an isolated subprocess ----
+    sandbox_env = {
+        "PATH": os.environ.get("PATH", ""),
+        "SYSTEMROOT": os.environ.get("SYSTEMROOT", ""),
+        "TEMP": os.environ.get("TEMP", ""),
+        "TMP": os.environ.get("TMP", ""),
+    }
+
+    try:
+        result = subprocess.run(
+            [sys.executable, "sandbox_check.py", save_path],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            env=sandbox_env,
+            cwd=BASE_DIR,
+        )
+    except subprocess.TimeoutExpired:
+        os.remove(save_path)
+        return {"status": "error", "message": "File took too long to process and was rejected for safety."}
+
+    if result.returncode != 0 or not result.stdout.strip():
+        print("SANDBOX STDERR:", result.stderr)
+        os.remove(save_path)
+        return {"status": "error", "message": "File processing crashed and was rejected for safety."}
+
+    try:
+        sandbox_result = json.loads(result.stdout.strip().splitlines()[-1])
+    except json.JSONDecodeError:
+        os.remove(save_path)
+        return {"status": "error", "message": "Unexpected sandbox output — file rejected for safety."}
+
+    if sandbox_result["status"] != "ok":
+        os.remove(save_path)
+        return {"status": "error", "message": sandbox_result.get("reason", "File rejected by security check.")}
+
+    extracted = sandbox_result["data"]
+    # ---- END SANDBOX ----
+
+    chunks = chunk_document(extracted, document_id=document_id, stored_filename=stored_filename)
 
     if not chunks:
         return {"status": "error", "message": "No content could be extracted from this file."}
@@ -114,34 +154,34 @@ def upload_document(file: UploadFile = File(...)):
     add_chunks(chunks)
 
     return {
-        "filename": file.filename,
+        "filename": original_filename,
+        "document_id": document_id,
         "document_type": chunks[0]["document_type"],
         "chunks_added": len(chunks),
         "status": "success",
     }
+@app.delete("/documents/{document_id}")
+def remove_document(document_id: str):
+    docs = list_documents()
+    match = next((d for d in docs if d["document_id"] == document_id), None)
 
-@app.delete("/documents/{filename}")
-def remove_document(filename: str):
-    safe_filename = os.path.basename(filename)
+    delete_document(document_id)
 
-    # Remove from ChromaDB
-    delete_document(safe_filename)
+    if match and match.get("stored_filename"):
+        file_path = os.path.join(UPLOAD_DIR, match["stored_filename"])
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
-    # Remove from disk too
-    file_path = os.path.join(UPLOAD_DIR, safe_filename)
-    if os.path.exists(file_path):
-        os.remove(file_path)
-
-    return {"status": "success", "message": f"{safe_filename} removed"}
+    return {"status": "success", "message": "Document removed"}
 
 class ComplianceRequest(BaseModel):
-    documents: list[str]
+    document_ids: list[str]
 
 @app.post("/compliance-check")
 def compliance_check(req: ComplianceRequest):
-    results = run_compliance_check(req.documents)
+    results = run_compliance_check(req.document_ids)
     data = save_compliance_results(results)
-    return data  # {"results": [...], "ran_at": "..."}
+    return data
 
 @app.get("/compliance-check")
 def get_last_compliance_check():

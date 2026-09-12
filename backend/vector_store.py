@@ -8,12 +8,7 @@ _chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
 _collection = _chroma_client.get_or_create_collection(name="epc_documents")
 
 
-
 def add_chunks(chunks: list[dict]):
-    """
-    Embeds and stores a list of chunk dicts (from chunk_document())
-    into ChromaDB.
-    """
     ids = []
     texts = []
     metadatas = []
@@ -25,6 +20,8 @@ def add_chunks(chunks: list[dict]):
         embeddings.append(embed_text(chunk["text"]))
         metadatas.append({
             "filename": chunk["filename"],
+            "document_id": chunk["document_id"],
+            "stored_filename": chunk["stored_filename"],
             "filetype": chunk["filetype"],
             "doc_type": chunk["doc_type"],
             "document_type": chunk["document_type"],
@@ -39,12 +36,7 @@ def add_chunks(chunks: list[dict]):
 
 
 def search(query: str, n_results: int = 5, filter_document_type: str = None):
-    """
-    Embeds the query and finds the closest matching chunks.
-    Optionally filter by document_type, e.g. "Vendor Submittal".
-    """
     query_embedding = embed_text(query)
-
     where_filter = {"document_type": filter_document_type} if filter_document_type else None
 
     results = _collection.query(
@@ -58,40 +50,36 @@ def search(query: str, n_results: int = 5, filter_document_type: str = None):
         matches.append({
             "text": results["documents"][0][i],
             "metadata": results["metadatas"][0][i],
-            "distance": results["distances"][0][i],  # lower = more similar
+            "distance": results["distances"][0][i],
         })
     return matches
 
 
-
 def list_documents():
     """
-    Groups all stored chunks by filename, returning one summary row per
-    document instead of raw chunks. Powers GET /documents.
+    Groups all stored chunks by document_id (NOT filename — two
+    uploads can share a filename but never a document_id).
     """
-    # Pull every chunk's metadata — cheap since we only need metadata, not embeddings
     all_data = _collection.get(include=["metadatas"])
 
     grouped = {}
     for metadata in all_data["metadatas"]:
-        filename = metadata["filename"]
-        if filename not in grouped:
-            grouped[filename] = {
-                "filename": filename,
+        doc_id = metadata["document_id"]
+        if doc_id not in grouped:
+            grouped[doc_id] = {
+                "document_id": doc_id,
+                "filename": metadata["filename"],
+                "stored_filename": metadata.get("stored_filename"),
                 "document_type": metadata["document_type"],
                 "filetype": metadata["filetype"],
                 "chunk_count": 0,
             }
-        grouped[filename]["chunk_count"] += 1
+        grouped[doc_id]["chunk_count"] += 1
 
     return list(grouped.values())
 
 
 def get_stats():
-    """
-    Aggregate counts for the dashboard's stat cards.
-    Deliberately cheap — just summarizes list_documents(), no new queries.
-    """
     documents = list_documents()
     total_documents = len(documents)
     total_chunks = sum(doc["chunk_count"] for doc in documents)
@@ -101,8 +89,10 @@ def get_stats():
         "total_chunks": total_chunks,
     }
 
-def delete_document(filename: str):
+
+def delete_document(document_id: str):
     """
-    Removes all chunks belonging to a given filename from ChromaDB.
+    Removes all chunks belonging to a specific upload (by document_id,
+    not filename) from ChromaDB.
     """
-    _collection.delete(where={"filename": filename})
+    _collection.delete(where={"document_id": document_id})

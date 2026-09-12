@@ -3,7 +3,7 @@ import json
 import os
 from datetime import datetime
 
-from google.genai.errors import ServerError
+from requests.exceptions import RequestException
 from fastapi import HTTPException
 
 from exctractors import extract_file
@@ -16,38 +16,37 @@ COMPLIANCE_FILE = os.path.join(BASE_DIR, "last_compliance_check.json")
 MAX_COMPLIANCE_CHARS = int(os.getenv("MAX_COMPLIANCE_CHARS", 150000))
 
 
-def run_compliance_check(filenames: list[str]):
-    if not filenames or len(filenames) < 2:
+def run_compliance_check(document_ids: list[str]):
+    if not document_ids or len(document_ids) < 2:
         raise HTTPException(
             status_code=400,
             detail="Select at least 2 documents to compare (e.g. a Specification and a Vendor Submittal)."
         )
 
-    all_docs = {d["filename"]: d["document_type"] for d in list_documents()}
+    all_docs = {d["document_id"]: d for d in list_documents()}
 
     sections = []
     total_chars = 0
 
-    for filename in filenames:
-        if filename not in all_docs:
-            raise HTTPException(status_code=404, detail=f"Document '{filename}' not found.")
+    for doc_id in document_ids:
+        if doc_id not in all_docs:
+            raise HTTPException(status_code=404, detail="One of the selected documents was not found.")
 
-        file_path = os.path.join(UPLOAD_DIR, filename)
+        doc = all_docs[doc_id]
+        file_path = os.path.join(UPLOAD_DIR, doc["stored_filename"])
         if not os.path.exists(file_path):
-            raise HTTPException(status_code=404, detail=f"File '{filename}' missing from disk.")
+            raise HTTPException(status_code=404, detail=f"File '{doc['filename']}' missing from disk.")
 
         extracted = extract_file(file_path)
         text = extracted.get("text")
         if text is None:
-            # Structured docs (xlsx/csv) come back as records — join into readable text
             text = "\n".join(
                 ", ".join(f"{k}: {v}" for k, v in row.items())
                 for row in extracted.get("records", [])
             )
 
         total_chars += len(text)
-        doc_type = all_docs[filename]
-        sections.append(f"=== {doc_type.upper()} — {filename} ===\n{text}")
+        sections.append(f"=== {doc['document_type'].upper()} — {doc['filename']} ===\n{text}")
 
     if total_chars > MAX_COMPLIANCE_CHARS:
         raise HTTPException(
@@ -60,6 +59,7 @@ def run_compliance_check(filenames: list[str]):
         )
 
     combined_docs = "\n\n".join(sections)
+    # (baaki prompt bilkul waisa hi rahega — jaisa pehle tha)
 
     prompt = f"""{combined_docs}
 
@@ -79,11 +79,11 @@ Example format:
 
     try:
         raw_response = ask_ai(prompt)
-    except ServerError:
+    except RequestException:
         raise HTTPException(
-            status_code=503,
-            detail="AI service is currently busy (Gemini high demand). Please try again in a minute."
-        )
+        status_code=503,
+        detail="AI model is currently unreachable — check if the Colab notebook/ngrok tunnel is still running."
+    )
 
     cleaned = raw_response.strip()
     if cleaned.startswith("```"):
