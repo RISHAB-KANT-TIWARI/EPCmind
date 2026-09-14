@@ -59,8 +59,10 @@ export const askQuestion = (question, documentType = null) =>
  * strings above (case-sensitive) since it maps directly to the
  * green/amber/red status dots.
  */
-export const runComplianceCheck = (payload = {}) =>
-  client.post("/compliance-check", payload);
+// export const runComplianceCheck = (payload = {}) =>
+//   client.post("/compliance-check", payload);
+export const runComplianceCheck = (documentIds) =>
+  client.post("/compliance-check", { document_ids: documentIds });
 
 export const getLastComplianceCheck = () => client.get("/compliance-check");
 
@@ -78,6 +80,7 @@ export const uploadDocument = (file, onProgress) => {
   formData.append("file", file);
   return client.post("/upload", formData, {
     headers: { "Content-Type": "multipart/form-data" },
+    timeout: 120000, // STEP: 30000 (30s) se badhaakar 120000 (2 min) kiya
     onUploadProgress: (evt) => {
       if (onProgress && evt.total) {
         onProgress(Math.round((evt.loaded / evt.total) * 100));
@@ -116,5 +119,12 @@ export const getDocuments = () => client.get("/documents");
  * demo is fine if you're short on time.
  */
 export const getStats = () => client.get("/stats");
+/**
+ * ---- 6. DELETE DOCUMENT ----
+ * Expected FastAPI endpoint: DELETE /documents/{filename}
+ * Response body: { status: "success", message: "..." }
+ */
+export const deleteDocument = (documentId) =>
+  client.delete(`/documents/${encodeURIComponent(documentId)}`);
 
 export default client;

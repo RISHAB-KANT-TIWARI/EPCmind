@@ -1,15 +1,22 @@
 # Python
+backend/venv/
 backend/__pycache__/
-backend/.venv/
 backend/*.pyc
 
-# Backend secrets
+# Backend data & secrets (session-specific, should never be committed)
 backend/.env
+backend/chroma_db/
+backend/uploaded_docs/
+backend/compliance_results/
+backend/last_compliance_check.json
+backend/workspace_owners.json
 
 # Node
 Landing/node_modules/
 Dashboard/node_modules/
-frontend/dist/
+Landing/.vite/
+Dashboard/dist/
+Landing/dist/
 
 # Frontend env
 Dashboard/.env
