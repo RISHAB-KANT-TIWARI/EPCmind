@@ -61,8 +61,8 @@ export const askQuestion = (question, documentType = null) =>
  */
 // export const runComplianceCheck = (payload = {}) =>
 //   client.post("/compliance-check", payload);
-export const runComplianceCheck = (documentFilenames) =>
-  client.post("/compliance-check", { documents: documentFilenames });
+export const runComplianceCheck = (documentIds) =>
+  client.post("/compliance-check", { document_ids: documentIds });
 
 export const getLastComplianceCheck = () => client.get("/compliance-check");
 
@@ -124,7 +124,7 @@ export const getStats = () => client.get("/stats");
  * Expected FastAPI endpoint: DELETE /documents/{filename}
  * Response body: { status: "success", message: "..." }
  */
-export const deleteDocument = (filename) =>
-  client.delete(`/documents/${encodeURIComponent(filename)}`);
+export const deleteDocument = (documentId) =>
+  client.delete(`/documents/${encodeURIComponent(documentId)}`);
 
 export default client;

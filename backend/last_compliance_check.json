@@ -8,40 +8,40 @@
       "severity": "Critical"
     },
     {
-      "requirement": "Rated Capacity (per module)",
-      "specified_value": "500 kVA / 500 kW at unity output power factor",
-      "submitted_value": "500 kVA / 500 kW at unity output power factor",
+      "requirement": "Capacity",
+      "specified_value": "500 kVA / 500 kW",
+      "submitted_value": "500 kVA / 500 kW",
       "status": "Match",
       "severity": null
     },
     {
-      "requirement": "System Topology",
-      "specified_value": "Double conversion, on-line (VFI-SS-111 per IEC 62040-3)",
-      "submitted_value": "Double conversion, on-line (VFI per IEC 62040-3)",
-      "status": "Deviation",
-      "severity": "Low"
+      "requirement": "Topology",
+      "specified_value": "double conversion, on-line (VFI per IEC 62040-3)",
+      "submitted_value": "double conversion, on-line (VFI per IEC 62040-3)",
+      "status": "Match",
+      "severity": null
     },
     {
-      "requirement": "Overall AC-AC Efficiency (Double Conversion Mode)",
-      "specified_value": "\u2265 97.0% at 40\u2013100% load",
+      "requirement": "Efficiency",
+      "specified_value": "97.0% at 40-100% load",
       "submitted_value": "96.2% at 40\u2013100% load",
       "status": "Deviation",
-      "severity": "Low"
+      "severity": "Moderate"
     },
     {
       "requirement": "Warranty - Parts and Labor",
-      "specified_value": "minimum 2 years from Substantial Completion, extendable to 5 years via service agreement",
-      "submitted_value": "Standard 1-year parts and labor warranty from date of startup, extendable to 5 years via Eaton PredictPulse Advantage service agreement",
-      "status": "Deviation",
-      "severity": "Moderate"
+      "specified_value": "1-year",
+      "submitted_value": "1-year",
+      "status": "Match",
+      "severity": null
     },
     {
       "requirement": "Warranty - Battery",
-      "specified_value": "minimum 3 years full replacement, prorated to year 7",
-      "submitted_value": "2-year full replacement warranty, prorated to year 5",
-      "status": "Deviation",
-      "severity": "Moderate"
+      "specified_value": "2-year full replacement",
+      "submitted_value": "2-year full replacement",
+      "status": "Match",
+      "severity": null
     }
   ],
-  "ran_at": "2026-09-09T13:22:14.339346"
+  "ran_at": "2026-09-14T11:07:12.652111"
 }

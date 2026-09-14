@@ -8,12 +8,6 @@ import Modal from "../components/Modal";
 import { getDocuments, deleteDocument } from "../api/client";
 import { useToast } from "../components/Toast";
 
-/**
- * BACKEND NOTE: fetches GET /documents on mount (see api/client.js
- * getDocuments()). New uploads are prepended client-side immediately
- * (via UploadDropzone's onUploaded callback) rather than waiting on a
- * refetch, so the row animates in right away.
- */
 export default function Documents() {
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,6 +24,7 @@ export default function Documents() {
 
   const handleUploaded = (result) => {
     const newDoc = {
+      document_id: result.document_id,
       filename: result.filename,
       document_type: result.document_type,
       chunk_count: result.chunks_added,
@@ -66,8 +61,8 @@ export default function Documents() {
               </tr>
             </thead>
             <tbody>
-              {docs.map((doc, i) => (
-                <DocRow key={doc.filename + i} doc={doc} onDelete={() => setDeleteTarget(doc)} />
+              {docs.map((doc) => (
+                <DocRow key={doc.document_id} doc={doc} onDelete={() => setDeleteTarget(doc)} />
               ))}
             </tbody>
           </table>
@@ -80,8 +75,8 @@ export default function Documents() {
         onClose={() => setDeleteTarget(null)}
         onConfirm={async () => {
           try {
-            await deleteDocument(deleteTarget.filename);
-            setDocs((prev) => prev.filter((d) => d.filename !== deleteTarget.filename));
+            await deleteDocument(deleteTarget.document_id);
+            setDocs((prev) => prev.filter((d) => d.document_id !== deleteTarget.document_id));
             toast?.show(`${deleteTarget.filename} removed`);
           } catch (err) {
             toast?.show("Failed to remove document", "error");
@@ -103,7 +98,6 @@ function DocRow({ doc, onDelete }) {
 
   useGSAP(
     () => {
-      // New row slides down from top and fades in, pushing older rows down
       gsap.from(rowRef.current, {
         y: -12,
         opacity: 0,

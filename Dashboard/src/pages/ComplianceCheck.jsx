@@ -38,22 +38,27 @@ export default function ComplianceCheck() {
     { dependencies: [loading] }
   );
 
-  const toggleSelect = (filename) => {
+  const toggleSelect = (documentId) => {
     setSelected((prev) =>
-      prev.includes(filename)
-        ? prev.filter((f) => f !== filename)
-        : [...prev, filename]
+      prev.includes(documentId)
+        ? prev.filter((id) => id !== documentId)
+        : [...prev, documentId]
     );
   };
 
   const handleRun = async () => {
-    if (selected.length < 2) {
+    // Drop any selected id that no longer exists (e.g. deleted in another tab)
+    const validSelected = selected.filter((id) =>
+      documents.some((doc) => doc.document_id === id)
+    );
+
+    if (validSelected.length < 2) {
       toast?.show("Select at least 2 documents to compare.", "error");
       return;
     }
     setLoading(true);
     try {
-      const res = await runComplianceCheck(selected);
+      const res = await runComplianceCheck(validSelected);
       setResults(res.data.results || []);
       setRanAt(res.data.ran_at || null);
     } catch (err) {
@@ -95,13 +100,13 @@ export default function ComplianceCheck() {
             )}
             {documents.map((doc) => (
               <label
-                key={doc.filename}
+                key={doc.document_id}
                 className="flex items-center gap-2 cursor-pointer"
               >
                 <input
                   type="checkbox"
-                  checked={selected.includes(doc.filename)}
-                  onChange={() => toggleSelect(doc.filename)}
+                  checked={selected.includes(doc.document_id)}
+                  onChange={() => toggleSelect(doc.document_id)}
                 />
                 <span className="truncate">
                   {doc.filename}{" "}
