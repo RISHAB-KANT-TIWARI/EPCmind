@@ -1,47 +1,6 @@
 {
-  "results": [
-    {
-      "requirement": "Battery Autonomy",
-      "specified_value": "15 minutes",
-      "submitted_value": "10 minutes",
-      "status": "Deviation",
-      "severity": "Critical"
-    },
-    {
-      "requirement": "Capacity",
-      "specified_value": "500 kVA / 500 kW",
-      "submitted_value": "500 kVA / 500 kW",
-      "status": "Match",
-      "severity": null
-    },
-    {
-      "requirement": "Topology",
-      "specified_value": "double conversion, on-line (VFI per IEC 62040-3)",
-      "submitted_value": "double conversion, on-line (VFI per IEC 62040-3)",
-      "status": "Match",
-      "severity": null
-    },
-    {
-      "requirement": "Efficiency",
-      "specified_value": "97.0% at 40-100% load",
-      "submitted_value": "96.2% at 40\u2013100% load",
-      "status": "Deviation",
-      "severity": "Moderate"
-    },
-    {
-      "requirement": "Warranty - Parts and Labor",
-      "specified_value": "1-year",
-      "submitted_value": "1-year",
-      "status": "Match",
-      "severity": null
-    },
-    {
-      "requirement": "Warranty - Battery",
-      "specified_value": "2-year full replacement",
-      "submitted_value": "2-year full replacement",
-      "status": "Match",
-      "severity": null
-    }
-  ],
-  "ran_at": "2026-09-14T11:07:12.652111"
+
+  "results": [],
+  "ran_at": "2026-09-23T19:55:14.998262"
+
 }
