@@ -54,20 +54,20 @@ class AskRequest(BaseModel):
     document_type : str | None = None
 
 @app.post("/ask")
-def ask(req : AskRequest):
-    chunks = search(req.question, filter_document_type = req.document_type)
-    answer = ask_with_rag(req.question, filter_document_type = req.document_type)
+def ask(req: AskRequest):
+    chunks = search(req.question, n_results=8, filter_document_type=req.document_type)
+    answer = ask_with_rag(req.question, chunks=chunks)   # ab dobara search nahi karega
 
     sources = [
         {
-            "filename" : c["metadata"]["filename"],
+            "filename": c["metadata"]["filename"],
             "document_type": c["metadata"]["document_type"],
             "text": c["text"],
             "distance": c["distance"],
         }
         for c in chunks
     ]
-    return {"answer" : answer , "sources": sources}
+    return {"answer": answer, "sources": sources}
 
 
 @app.get("/documents")
@@ -144,6 +144,7 @@ def upload_document(file: UploadFile = File(...)):
         return {"status": "error", "message": sandbox_result.get("reason", "File rejected by security check.")}
 
     extracted = sandbox_result["data"]
+    extracted["filename"] = original_filename
     # ---- END SANDBOX ----
 
     chunks = chunk_document(extracted, document_id=document_id, stored_filename=stored_filename)
