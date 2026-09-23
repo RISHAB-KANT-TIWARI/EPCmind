@@ -3,12 +3,12 @@ import json
 import os
 from datetime import datetime
 
-from google.genai.errors import ServerError
+from requests.exceptions import RequestException
 from fastapi import HTTPException
 
 from exctractors import extract_file
 from llm_api_provider import ask_ai
-from vector_store import list_documents
+from vector_store import list_documents, _collection
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", os.path.join(BASE_DIR, "uploaded_docs"))
@@ -16,38 +16,53 @@ COMPLIANCE_FILE = os.path.join(BASE_DIR, "last_compliance_check.json")
 MAX_COMPLIANCE_CHARS = int(os.getenv("MAX_COMPLIANCE_CHARS", 150000))
 
 
-def run_compliance_check(filenames: list[str]):
-    if not filenames or len(filenames) < 2:
+def _get_chunks_text(document_id: str) -> str:
+    """Retrieve and concatenate all chunk texts for a document from ChromaDB."""
+    results = _collection.get(
+        where={"document_id": document_id},
+        include=["documents"],
+    )
+    return "\n".join(results.get("documents", []))
+
+
+def run_compliance_check(document_ids: list[str]):
+    if not document_ids or len(document_ids) < 2:
         raise HTTPException(
             status_code=400,
             detail="Select at least 2 documents to compare (e.g. a Specification and a Vendor Submittal)."
         )
 
-    all_docs = {d["filename"]: d["document_type"] for d in list_documents()}
+    all_docs = {d["document_id"]: d for d in list_documents()}
 
     sections = []
     total_chars = 0
 
-    for filename in filenames:
-        if filename not in all_docs:
-            raise HTTPException(status_code=404, detail=f"Document '{filename}' not found.")
+    for doc_id in document_ids:
+        if doc_id not in all_docs:
+            raise HTTPException(status_code=404, detail="One of the selected documents was not found.")
 
-        file_path = os.path.join(UPLOAD_DIR, filename)
-        if not os.path.exists(file_path):
-            raise HTTPException(status_code=404, detail=f"File '{filename}' missing from disk.")
+        doc = all_docs[doc_id]
 
-        extracted = extract_file(file_path)
-        text = extracted.get("text")
-        if text is None:
-            # Structured docs (xlsx/csv) come back as records — join into readable text
-            text = "\n".join(
-                ", ".join(f"{k}: {v}" for k, v in row.items())
-                for row in extracted.get("records", [])
-            )
+        # Email documents have no file on disk — pull text from ChromaDB chunks
+        if doc["document_type"] == "Email":
+            text = _get_chunks_text(doc_id)
+            if not text.strip():
+                raise HTTPException(status_code=404, detail=f"Email '{doc['filename']}' has no content in the knowledge base.")
+        else:
+            file_path = os.path.join(UPLOAD_DIR, doc["stored_filename"])
+            if not os.path.exists(file_path):
+                raise HTTPException(status_code=404, detail=f"File '{doc['filename']}' missing from disk.")
+
+            extracted = extract_file(file_path)
+            text = extracted.get("text")
+            if text is None:
+                text = "\n".join(
+                    ", ".join(f"{k}: {v}" for k, v in row.items())
+                    for row in extracted.get("records", [])
+                )
 
         total_chars += len(text)
-        doc_type = all_docs[filename]
-        sections.append(f"=== {doc_type.upper()} — {filename} ===\n{text}")
+        sections.append(f"=== {doc['document_type'].upper()} — {doc['filename']} ===\n{text}")
 
     if total_chars > MAX_COMPLIANCE_CHARS:
         raise HTTPException(
@@ -63,12 +78,16 @@ def run_compliance_check(filenames: list[str]):
 
     prompt = f"""{combined_docs}
 
-Compare every relevant requirement (battery autonomy, capacity, efficiency, topology, warranty, etc.) across the documents above. Use the SPECIFICATION documents as the source of required values, and the VENDOR SUBMITTAL (and other) documents as what was actually provided. If there are multiple submittals, compare each separately against the specification.
+You are a compliance auditor. Carefully read ALL documents above. Identify every factual data point, specification, requirement, or claim that appears in ANY of the documents — do NOT assume what fields to look for, discover them from the actual content.
+
+Then cross-compare those data points across the documents:
+- If a value appears in one document, check whether the same data point appears in the other document(s).
+- If both documents state a value for the same data point, compare them.
 
 Respond with ONLY a JSON array, no markdown formatting, no explanation, no code fences. Each item must have exactly these fields:
-- "requirement": short name of what's being compared
-- "specified_value": the value from the specification, or "Not stated" if absent
-- "submitted_value": the value from the submittal, or "Not stated" if absent
+- "requirement": short name of the data point being compared (derived from the document content)
+- "specified_value": the value from the first document, or "Not stated" if absent
+- "submitted_value": the value from the second document, or "Not stated" if absent
 - "status": exactly one of "Match", "Deviation", or "Cannot verify"
 - "severity": "Critical", "Moderate", or "Low" if status is "Deviation", otherwise null
 
@@ -79,11 +98,11 @@ Example format:
 
     try:
         raw_response = ask_ai(prompt)
-    except ServerError:
+    except RequestException:
         raise HTTPException(
-            status_code=503,
-            detail="AI service is currently busy (Gemini high demand). Please try again in a minute."
-        )
+        status_code=503,
+        detail="AI model is currently unreachable — check if the Colab notebook/ngrok tunnel is still running."
+    )
 
     cleaned = raw_response.strip()
     if cleaned.startswith("```"):

@@ -35,9 +35,20 @@ const client = axios.create({
  * also returning the raw `chunks` you retrieved in rag.py's
  * ask_with_rag() so the UI can show real citations instead of just text.
  */
-export const askQuestion = (question, documentType = null) =>
-  client.post("/ask", { question, document_type: documentType });
 
+export const askQuestion = (question, documentType = null, provider = "qwen", documentId = null) =>
+  client.post("/ask", { question, document_type: documentType, provider, document_id: documentId });
+
+export const askImageQuestion = (question, imageFile, documentType = null) => {
+  const formData = new FormData();
+  formData.append("question", question);
+  formData.append("image", imageFile);
+  if (documentType) formData.append("document_type", documentType);
+  return client.post("/ask-image", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    timeout: 120000,
+  });
+};
 /**
  * ---- 2. COMPLIANCE CHECK ----
  * Expected FastAPI endpoint: POST /compliance-check
@@ -61,8 +72,8 @@ export const askQuestion = (question, documentType = null) =>
  */
 // export const runComplianceCheck = (payload = {}) =>
 //   client.post("/compliance-check", payload);
-export const runComplianceCheck = (documentFilenames) =>
-  client.post("/compliance-check", { documents: documentFilenames });
+export const runComplianceCheck = (documentIds) =>
+  client.post("/compliance-check", { document_ids: documentIds }, { timeout: 300000 });
 
 export const getLastComplianceCheck = () => client.get("/compliance-check");
 
@@ -80,7 +91,7 @@ export const uploadDocument = (file, onProgress) => {
   formData.append("file", file);
   return client.post("/upload", formData, {
     headers: { "Content-Type": "multipart/form-data" },
-    timeout: 120000, // STEP: 30000 (30s) se badhaakar 120000 (2 min) kiya
+    timeout: 300000, // 5 minute — bade/OCR-heavy files ke liye
     onUploadProgress: (evt) => {
       if (onProgress && evt.total) {
         onProgress(Math.round((evt.loaded / evt.total) * 100));
@@ -124,7 +135,33 @@ export const getStats = () => client.get("/stats");
  * Expected FastAPI endpoint: DELETE /documents/{filename}
  * Response body: { status: "success", message: "..." }
  */
-export const deleteDocument = (filename) =>
-  client.delete(`/documents/${encodeURIComponent(filename)}`);
+export const deleteDocument = (documentId) =>
+  client.delete(`/documents/${encodeURIComponent(documentId)}`);
+
+/**
+ * ---- 7. EMAIL INTEGRATION ----
+ * GET  /emails           → list all fetched emails (not necessarily ingested)
+ * POST /email/sync       → manually trigger an IMAP sync
+ * POST /email/ingest/:uid → ingest a specific email body + attachments into ChromaDB
+ * GET  /email/status     → last sync time, total fetched/ingested, errors
+ */
+export const getEmails = () => client.get("/emails");
+
+export const syncEmails = () => client.post("/email/sync");
+
+export const ingestEmail = (uid) =>
+  client.post(`/email/ingest/${encodeURIComponent(uid)}`);
+
+export const getEmailStatus = () => client.get("/email/status");
 
 export default client;
+
+
+export const agentAsk = (message, provider = "qwen") =>
+  client.post("/agent/ask", { message, provider });
+
+export const agentDeleteConfirmed = (documentIds) =>
+  client.post("/agent/delete-confirmed", { document_ids: documentIds });
+
+export const getDocumentContent = (documentId) =>
+  client.get(`/documents/${documentId}/content`);
