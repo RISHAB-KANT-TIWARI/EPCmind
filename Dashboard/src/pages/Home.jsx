@@ -4,7 +4,7 @@ import StatCard from "../components/StatCard";
 import { getStats } from "../api/client";
 
 /**
- * Sovereign AI Workbench Home Dashboard (SIH PS ID: 26117)
+ * EPCmind AI Workbench Home Dashboard (SIH PS ID: 26117)
  * Air-gapped on-premises intelligence for Refineries, PSUs,
  * defence manufacturing, and government offices.
  */
@@ -24,12 +24,12 @@ export default function Home() {
 
   return (
     <div className="px-4 sm:px-8 py-6 sm:py-8 max-w-5xl mx-auto">
-      {/* ── Header & Sovereign Enclave Badges ── */}
+      {/* ── Header & EPCmind Enclave Badges ── */}
       <div className="mb-8">
         <div className="flex flex-wrap items-center gap-2 mb-3">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            PS ID 26117 • Air-Gapped Sovereign Node
+            PS ID 26117 • Air-Gapped EPCmind Node
           </span>
           <span className="px-3 py-1 rounded-full text-xs font-mono text-text-secondary bg-white/5 border border-white/10">
             Refineries • PSUs • Defence • Gov Enclave
@@ -47,7 +47,7 @@ export default function Home() {
             WebkitTextFillColor: "transparent",
           }}
         >
-          Sovereign On-Premise Agentic AI Workbench
+          EPCmind On-Premise Agent AI Workbench
         </h2>
         <p className="text-text-primary/90 text-sm font-medium mb-2">
           Using Open-Weight Multimodal LLMs for Confidential Industrial Work

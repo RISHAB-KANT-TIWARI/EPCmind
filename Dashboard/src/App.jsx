@@ -14,7 +14,7 @@ import Emails from "./pages/Emails";
 import ColdStartBanner from "./components/ColdStartBanner";
 
 const TITLES = {
-  "/": "Sovereign AI Workbench",
+  "/": "EPCmind Agent AI Workbench",
   "/ask": "Ask Documents",
   "/compliance": "Compliance Audit",
   "/documents": "Document Vault",
@@ -53,7 +53,7 @@ function Layout() {
           the fixed rail only at lg+ where the sidebar is always visible. */}
       <div className="lg:ml-[17rem]">
         <Navbar
-          title={TITLES[location.pathname] || "Sovereign AI Workbench"}
+          title={TITLES[location.pathname] || "EPCmind AI Workbench"}
           onMenuClick={() => setSidebarOpen(true)}
         />
         <ColdStartBanner />

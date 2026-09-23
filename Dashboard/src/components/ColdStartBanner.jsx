@@ -67,7 +67,7 @@ export default function ColdStartBanner() {
 
       {/* Text */}
       <div className="flex-1 text-sm leading-relaxed">
-        <span className="font-semibold text-emerald-300">Air-Gapped Sovereign Node Active (PS 26117) — </span>
+        <span className="font-semibold text-emerald-300">Air-Gapped EPCmind Node Active (PS 26117) — </span>
         <span className="text-emerald-100/90">
           Running 100% on-premises on local GPU hardware. Zero external network calls or cloud telemetry.
           Engineering drawings, P&amp;IDs, confidential specs, and correspondence remain strictly inside this secure enclave.
