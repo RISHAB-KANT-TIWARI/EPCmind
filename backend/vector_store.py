@@ -1,5 +1,5 @@
 import chromadb
-from llm_api_provider import embed_text
+from llm_api_provider import embed_text, embed_text_batch
 import os
 CHROMA_PATH = os.getenv("CHROMA_PATH", "./chroma_db")
 
@@ -9,33 +9,21 @@ _collection = _chroma_client.get_or_create_collection(name="epc_documents")
 
 
 def add_chunks(chunks: list[dict]):
-    ids = []
-    texts = []
-    metadatas = []
-    embeddings = []
+    ids = [c["chunk_id"] for c in chunks]
+    texts = [c["text"] for c in chunks]
+    embeddings = embed_text_batch(texts)
+    metadatas = [{
+        "filename": c["filename"],
+        "document_id": c["document_id"],
+        "stored_filename": c["stored_filename"],
+        "filetype": c["filetype"],
+        "doc_type": c["doc_type"],
+        "document_type": c["document_type"],
+    } for c in chunks]
 
-    for chunk in chunks:
-        ids.append(chunk["chunk_id"])
-        texts.append(chunk["text"])
-        embeddings.append(embed_text(chunk["text"]))
-        metadatas.append({
-            "filename": chunk["filename"],
-            "document_id": chunk["document_id"],
-            "stored_filename": chunk["stored_filename"],
-            "filetype": chunk["filetype"],
-            "doc_type": chunk["doc_type"],
-            "document_type": chunk["document_type"],
-        })
+    _collection.add(ids=ids, documents=texts, metadatas=metadatas, embeddings=embeddings)
 
-    _collection.add(
-        ids=ids,
-        documents=texts,
-        embeddings=embeddings,
-        metadatas=metadatas,
-    )
-
-
-def search(query: str, n_results: int = 5, filter_document_type: str = None):
+def search(query: str, n_results: int = 8, filter_document_type: str = None):
     query_embedding = embed_text(query)
     where_filter = {"document_type": filter_document_type} if filter_document_type else None
 
@@ -96,3 +84,20 @@ def delete_document(document_id: str):
     not filename) from ChromaDB.
     """
     _collection.delete(where={"document_id": document_id})
+
+def get_document_chunks(document_id: str):
+    """
+    Returns ALL chunks of one specific document (no semantic search) —
+    used when the user has explicitly selected a single document to
+    ask about, so nothing gets missed.
+    """
+    data = _collection.get(
+        where={"document_id": document_id},
+        include=["documents", "metadatas"],
+    )
+
+    items = list(zip(data["ids"], data["documents"], data["metadatas"]))
+    # chunk_id format is "{document_id}_{index}" — sort by that index
+    items.sort(key=lambda x: int(x[0].split("_")[-1]))
+
+    return [{"text": text, "metadata": meta} for _, text, meta in items]
