@@ -221,7 +221,7 @@ export default function AskDocuments({ messages, setMessages, docType, setDocTyp
         {messages.length === 0 && !loading && (
           <EmptyState
             icon="💬"
-            title="Query Sovereign Knowledge Base"
+            title="Query EPCmind Knowledge Base"
             description='Grounded in local specs, P&IDs, vendor submittals, and correspondence. Try: "What battery backup runtime does the specification require?"'
           />
         )}
