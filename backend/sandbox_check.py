@@ -12,6 +12,10 @@ MAGIC_BYTES = {
     ".docx": [b"PK"],
     ".xlsx": [b"PK"],
     ".xls": [b"\xD0\xCF\x11\xE0"],
+    ".jpg": [b"\xFF\xD8\xFF"],
+    ".jpeg": [b"\xFF\xD8\xFF"],
+    ".png": [b"\x89PNG\r\n\x1a\n"],
+    ".zip": [b"PK"]
 }
 
 
@@ -29,7 +33,7 @@ def check_zip_bomb(path, ext):
     """DOCX/XLSX are ZIP files under the hood. Checks the total
     UNCOMPRESSED size before fully extracting — catches a tiny file
     crafted to explode into gigabytes when opened."""
-    if ext not in (".docx", ".xlsx"):
+    if ext not in (".docx", ".xlsx", ".zip"):
         return True
     try:
         with zipfile.ZipFile(path) as z:
@@ -58,6 +62,9 @@ def main():
             "reason": "File expands to a suspiciously large size and was rejected."
         }))
         return
+    # if ext in (".jpg", ".jpeg", ".png"):
+    #     print(json.dumps({"status": "ok"}))
+    #     return
 
     try:
         extracted = extract_file(file_path)
