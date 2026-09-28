@@ -26,15 +26,6 @@
 
 </div>
 
-## 📌 Executive Summary & Hosted Demo
-
-Try the interactive platform live at **[epcmind.netlify.app](https://epcmind.netlify.app/)**.
-
-> 💡 **Notice regarding free-tier backend cold starts:**  
-> The hosted backend may take **1–2 minutes** to wake up on the first request after periods of inactivity. If the initial request takes longer than usual, please allow a moment for the container to initialize.
-
----
-
 ## 💥 The Problem
 
 In hyper-scale data centre EPC projects, delivery teams must reconcile tens of thousands of engineering requirements across fragmented silos:
